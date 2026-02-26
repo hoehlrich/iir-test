@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include "portaudio.h"
  
-#define SAMPLE_RATE  (44100)
+#define SAMPLE_RATE  (16000)
 #define FRAMES_PER_BUFFER (512)
 #define NUM_SECONDS     (5)
 #define NUM_CHANNELS    (1)
 #define DITHER_FLAG     (0) 
-#define WRITE_TO_FILE   (0)
+#define WRITE_TO_FILE   (1)
  
 #define PA_SAMPLE_TYPE  paFloat32
 typedef float SAMPLE;
@@ -241,6 +241,7 @@ int main(void) {
  
         printf("Done.\n"); fflush(stdout);
     }
+    
  
 done:
     Pa_Terminate();

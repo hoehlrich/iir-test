@@ -2,6 +2,7 @@
 #define CIRCULAR_BUFFER_H
 
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <memory>
@@ -12,8 +13,9 @@ class CircularBuffer {
         CircularBuffer(uint32_t capacity);
         void write(T value);
         T read();
-        T *readBlock(uint32_t size);
-        int writeBlock(T *block);
+        std::unique_ptr<T[]> readBlock(uint32_t size);
+        void writeBlock(std::unique_ptr<T[]> block, uint32_t size);
+        void readToFFT(T *fftIn, uint32_t N);
         void print();
     private:
         std::unique_ptr<T[]> data;
@@ -38,7 +40,7 @@ void CircularBuffer<T>::write(T value) {
     if (currSize < capacity) {
         currSize++;
     } else {
-        start = (start + 1) % capacity;
+        start = (start + 1) % capacity; // Overflow
     }
 }
 
@@ -50,6 +52,41 @@ T CircularBuffer<T>::read() {
     start = (start + 1) % capacity;
     currSize--;
     return value;
+}
+
+template <typename T>
+std::unique_ptr<T[]> CircularBuffer<T>::readBlock(uint32_t size) {
+    std::unique_ptr<T[]> block = std::make_unique<T[]>(size);
+    for (uint32_t i = 0; i < size; i++) {
+        block[i] = this->read();
+    }
+}
+
+template <typename T>
+void CircularBuffer<T>::writeBlock(std::unique_ptr<T[]> block, uint32_t size) {
+    for (uint32_t i = 0; i < size; i++) {
+        data[end] = block[i];
+        end = (end + 1) % capacity;
+    }
+
+    // Change currSize once
+    if (currSize + size < capacity) {
+        currSize += size;
+    } else {
+        currSize = capacity;
+        start = end;    // update start when overflows
+    }
+}
+
+template <typename T>
+void CircularBuffer<T>::readToFFT(T *fftIn, uint32_t N) {
+    uint32_t first = N <= (capacity - start) ? N : capacity - start; // num elements to read from start
+    uint32_t second = N - first; // num elements to read from 0
+
+    std::memcpy(fftIn, &data[start], sizeof(T) * first);
+
+    if (second > 0)
+        std::memcpy(&fftIn[first], &data[0], sizeof(T) * second);
 }
 
 template <typename T>

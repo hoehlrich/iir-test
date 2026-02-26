@@ -38,7 +38,7 @@ LPF::LPF(uint32_t samplingFrequency, uint32_t cutoffFrequency, float qualityFact
 }
 
 float LPF::process(float x) {
-    float y = (b0/a0)x + (b1/a0)x1 + (b2/a0)x2 - (a1/a0)y1 - (a2/a0)y2;
+    float y = (b0/a0)*x + (b1/a0)*x1 + (b2/a0)*x2 - (a1/a0)*y1 - (a2/a0)*y2;
     x2 = x1;
     x1 = x;
     y2 = y1;
