@@ -13,9 +13,9 @@ class CircularBuffer {
         CircularBuffer(uint32_t capacity);
         void write(T value);
         T read();
-        std::unique_ptr<T[]> readBlock(uint32_t size);
         void writeBlock(std::unique_ptr<T[]> block, uint32_t size);
-        void readToFFT(T *fftIn, uint32_t N);
+        void readBlock(T *fftIn, uint32_t N);
+        uint32_t getCurrSize();
         void print();
     private:
         std::unique_ptr<T[]> data;
@@ -55,14 +55,6 @@ T CircularBuffer<T>::read() {
 }
 
 template <typename T>
-std::unique_ptr<T[]> CircularBuffer<T>::readBlock(uint32_t size) {
-    std::unique_ptr<T[]> block = std::make_unique<T[]>(size);
-    for (uint32_t i = 0; i < size; i++) {
-        block[i] = this->read();
-    }
-}
-
-template <typename T>
 void CircularBuffer<T>::writeBlock(std::unique_ptr<T[]> block, uint32_t size) {
     for (uint32_t i = 0; i < size; i++) {
         data[end] = block[i];
@@ -79,14 +71,19 @@ void CircularBuffer<T>::writeBlock(std::unique_ptr<T[]> block, uint32_t size) {
 }
 
 template <typename T>
-void CircularBuffer<T>::readToFFT(T *fftIn, uint32_t N) {
+void CircularBuffer<T>::readBlock(T *outputBuffer, uint32_t N) {
     uint32_t first = N <= (capacity - start) ? N : capacity - start; // num elements to read from start
     uint32_t second = N - first; // num elements to read from 0
 
-    std::memcpy(fftIn, &data[start], sizeof(T) * first);
+    std::memcpy(outputBuffer, &data[start], sizeof(T) * first);
 
     if (second > 0)
-        std::memcpy(&fftIn[first], &data[0], sizeof(T) * second);
+        std::memcpy(&outputBuffer[first], &data[0], sizeof(T) * second);
+}
+
+template <typename T>
+uint32_t CircularBuffer<T>::getCurrSize() {
+    return currSize;
 }
 
 template <typename T>

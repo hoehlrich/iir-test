@@ -1,3 +1,6 @@
+#ifndef SPECTROGRAM_H
+#define SPECTROGRAM_H
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -9,15 +12,16 @@
 
 class Spectrogram {
     public:
-      Spectrogram(sf::RenderWindow *_window, fftw_complex *_dft,
+      Spectrogram(sf::RenderWindow *_window, fftwf_complex *_dft,
                   uint32_t _fftSize, uint32_t _fundFreq, sf::Vector2f origin,
                   sf::Vector2f _size, sf::Vector2f _dBRange);
+      Spectrogram(const Spectrogram& OTHER) = delete;
       void drawBars();
       void clearBars(sf::Color color);
       void drawAxis();
     private:
         sf::RenderWindow *window;
-        fftw_complex *dft;
+        fftwf_complex *dft;
         uint32_t fftSize, fundFreq;
         sf::Vector2f origin;
         sf::Vector2f size; // width, height
@@ -27,7 +31,7 @@ class Spectrogram {
         sf::Font font;
 };
 
-Spectrogram::Spectrogram(sf::RenderWindow *_window, fftw_complex *_dft,
+Spectrogram::Spectrogram(sf::RenderWindow *_window, fftwf_complex *_dft,
                          uint32_t _fftSize, uint32_t _fundFreq,
                          sf::Vector2f _origin, sf::Vector2f _size,
                          sf::Vector2f _dBRange) {
@@ -121,3 +125,4 @@ void Spectrogram::drawBars() {
     window->draw(bars);
 }
 
+#endif
